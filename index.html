@@ -1,17 +1,90 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-BR">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Exibição de PDF com PDF.js</title>
     <style>
-        *{
+        * {
             max-width: 100%;
+        }
+
+        #controls {
+            margin: 10px 0;
+        }
+
+        #pdf-canvas {
+            border: 1px solid #ccc;
         }
     </style>
 </head>
+
 <body>
-    <a href="Bucetinha ou bucetona_Tufos.pdf">bb</a>
-    <iframe src="Bucetinha ou bucetona_Tufos.pdf" width="100%" height="600px" type="aplication/pdf"></iframe>
+    <h1>Visualizando o arquivo PDF com PDF.js</h1>
+
+    <div id="controls">
+        <button id="prev">Página Anterior</button>
+        <button id="next">Próxima Página</button>
+        <span>Página: <span id="page-num">1</span> de <span id="page-count">1</span></span>
+    </div>
+
+    <canvas id="pdf-canvas"></canvas>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.min.js"></script>
+
+    <script>
+        var url = 'Bucetinha ou bucetona_Tufos.pdf'; // Caminho para o PDF
+        var pdfDoc = null;
+        var pageNum = 1;
+        var pageCount = 0;
+        var canvas = document.getElementById('pdf-canvas');
+        var ctx = canvas.getContext('2d');
+        var pageNumSpan = document.getElementById('page-num');
+        var pageCountSpan = document.getElementById('page-count');
+
+        // Carregar o PDF
+        pdfjsLib.getDocument(url).promise.then(function(pdfDoc_) {
+            pdfDoc = pdfDoc_;
+            pageCount = pdfDoc.numPages;
+            pageCountSpan.textContent = pageCount;
+            renderPage(pageNum); // Renderiza a primeira página
+        });
+
+        // Função para renderizar uma página
+        function renderPage(num) {
+            pdfDoc.getPage(num).then(function(page) {
+                var viewport = page.getViewport({
+                    scale: 1.5
+                }); // Ajuste o scale se necessário
+                canvas.height = viewport.height;
+                canvas.width = viewport.width;
+
+                page.render({
+                    canvasContext: ctx,
+                    viewport: viewport
+                });
+
+                pageNumSpan.textContent = num;
+            });
+        }
+
+        // Navegar para a página anterior
+        document.getElementById('prev').addEventListener('click', function() {
+            if (pageNum > 1) {
+                pageNum--;
+                renderPage(pageNum);
+            }
+        });
+
+        // Navegar para a próxima página
+        document.getElementById('next').addEventListener('click', function() {
+            if (pageNum < pageCount) {
+                pageNum++;
+                renderPage(pageNum);
+            }
+        });
+    </script>
 </body>
+
 </html>
